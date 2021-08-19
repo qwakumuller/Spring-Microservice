@@ -1,0 +1,69 @@
+spring:
+    application:
+      name: API_GATEWAY
+
+    cloud:
+        gateway:
+          routes:
+            - id: DEPARTMENT
+              uri: lb://DEPARTMENT
+              predicates:
+                - Path=/department/**
+              filters:
+                - name: Hystrix
+                  args:
+                    name: USER
+                    fallback: forward:/userfallback
+
+            - id: USER
+              uri: lb://USER
+              predicates:
+                  - Path=/user/**
+              filters:
+                - name: Hystrix
+                  args:
+                    name: DEPARTMENT
+                    fallback: forward:/departmentfallback
+
+
+
+
+
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliSeconds: 4000
+
+
+managemment:
+  endpoint:
+    web:
+      exposure:
+        include: hystrix.stream
+
+
+
+server:
+    port: 8282
+eureka:
+    client:
+      fetch-registry: true
+
+
+      register-with-eureka: true
+      service-url:
+        defaultZone: http://localhost:8761/eureka/
+    instance:
+     hostname: localhost
+
+
+
+
+
+
+
+
